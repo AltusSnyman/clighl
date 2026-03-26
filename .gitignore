@@ -1,0 +1,20 @@
+# Binaries
+clighl
+clighl.exe
+dist/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Go
+vendor/
+
+# Config (don't commit credentials)
+.env
