@@ -54,9 +54,18 @@ func runConversationsSend(cmd *cobra.Command, args []string) error {
 	req := &models.SendMessageRequest{
 		Type:           sendType,
 		ContactID:      contact.ID,
-		Message:        sendMessage,
-		Subject:        sendSubject,
 		ConversationID: sendConvID,
+	}
+
+	if sendType == "Email" || sendType == "email" {
+		// HighLevel expects HTML/body content for email sends. Mirror the content into
+		// both fields to be tolerant of API-side validation differences.
+		req.Message = sendMessage
+		req.HTML = sendMessage
+		req.Subject = sendSubject
+	} else {
+		req.Message = sendMessage
+		req.Subject = sendSubject
 	}
 
 	resp, err := client.SendMessage(cmd.Context(), req)

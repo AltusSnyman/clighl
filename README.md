@@ -220,10 +220,18 @@ clighl conv messages k875FrRiRO5ylPsgPRJp --limit 10
 # Send an SMS
 clighl conv send --contact "Dan" --type SMS --message "Following up on our call"
 
-# Send an email
-clighl conv send --contact "Dan" --type Email \
-  --subject "Proposal attached" --message "<h1>Hi Dan</h1><p>Here's the proposal.</p>"
+# Send an email by contact name or email
+clighl conv send --contact "dan@test.com" --type Email \
+  --subject "Proposal attached" \
+  --message "<h1>Hi Dan</h1><p>Here's the proposal.</p>"
+
+# Send an email by exact contact ID
+clighl conv send --contact "JY81tMqvDZJG4EiGDujA" --type Email \
+  --subject "Quick test" \
+  --message "<p>This is a live test email from clighl.</p>"
 ```
+
+**Email note:** for `--type Email`, pass the email body with `--message`. HTML content is supported, and exact contact IDs now resolve correctly for non-interactive use.
 
 > GHL API: [Search Conversations](https://marketplace.gohighlevel.com/docs/ghl/conversations/search-conversation/), [Get Messages](https://marketplace.gohighlevel.com/docs/ghl/conversations/get-messages/), [Send Message](https://marketplace.gohighlevel.com/docs/ghl/conversations/send-a-new-message/)
 

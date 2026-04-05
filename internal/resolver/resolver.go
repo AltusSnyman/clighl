@@ -25,6 +25,14 @@ func NewResolver(client *api.Client) *Resolver {
 
 // ResolveContact searches for a contact by name/email and handles disambiguation.
 func (r *Resolver) ResolveContact(ctx context.Context, query string) (*models.Contact, error) {
+	// If the caller already provided a contact ID, fetch it directly.
+	if looksLikeContactID(query) {
+		contact, err := r.Client.GetContact(ctx, query)
+		if err == nil && contact != nil {
+			return contact, nil
+		}
+	}
+
 	resp, err := r.Client.SearchContacts(ctx, query, 1, 20)
 	if err != nil {
 		return nil, fmt.Errorf("search contacts: %w", err)
@@ -38,12 +46,32 @@ func (r *Resolver) ResolveContact(ctx context.Context, query string) (*models.Co
 		return &resp.Contacts[0], nil
 	}
 
+	// Prefer exact email/name matches in non-interactive flows.
+	for i := range resp.Contacts {
+		c := &resp.Contacts[i]
+		if strings.EqualFold(c.Email, query) || strings.EqualFold(c.DisplayName(), query) || strings.EqualFold(c.ID, query) {
+			return c, nil
+		}
+	}
+
 	// Multiple matches — need disambiguation
 	if !isTerminal() {
-		return nil, fmt.Errorf("multiple contacts match '%s'. Use --id to specify the exact contact ID", query)
+		return nil, fmt.Errorf("multiple contacts match '%s'. Use a unique email or exact contact ID", query)
 	}
 
 	return disambiguateContact(resp.Contacts)
+}
+
+func looksLikeContactID(query string) bool {
+	if len(query) < 10 || strings.Contains(query, "@") || strings.Contains(query, " ") {
+		return false
+	}
+	for _, r := range query {
+		if (r < 'a' || r > 'z') && (r < 'A' || r > 'Z') && (r < '0' || r > '9') && r != '-' && r != '_' {
+			return false
+		}
+	}
+	return true
 }
 
 // ResolvePipeline finds a pipeline by name (case-insensitive).
